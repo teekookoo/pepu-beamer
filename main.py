@@ -8,6 +8,9 @@ import os
 # Adjust these to customize the program
 # TODO implement as command line flags
 
+# Title of the slideshow
+TITLE = 'Perjantaipulloarvonta'
+
 # Author to show on title slide
 AUTHOR_NAME = 'Tarmo Kivioja'
 
@@ -42,31 +45,41 @@ COMPILE_AND_PREVIEW = True
 
 
 def main():
+    """
+    Generate the tex file, compile optionally
+    """
     template = read_template(TEMPLATE_FILE)
     participants = read_participants(PARTICIPANTS_FILE)
     tex_contents = make_tex(template, participants)
     write_tex(tex_contents)
     if COMPILE_AND_PREVIEW:
-      os.system(f'latexmk -pdf -pv {TEX_FILE}')
+        os.system(f'latexmk -pdf -pv {TEX_FILE}')
     return 0
 
 
-# Read the template file and return as a string
 def read_template(filename):
+    """
+    Read the template file and return as a string
+    """
     with open(filename) as f:
         return f.read()
 
 
-# Read the participant file and return as a list of strings
 def read_participants(filename):
+    """
+    Read the participant file and return as a list of strings
+    """
     with open(filename) as f:
         return [name.strip() for name in f]
 
 
-# Turn the template string into a valid .tex string
 def make_tex(template, participants):
+    """
+    Turn the template string into a valid .tex string
+    """
     raffle_frames, winner = make_raffle(participants)
     return (template
+            .replace('%% TITLE %%', TITLE)
             .replace('%% AUTHOR_NAME %%', AUTHOR_NAME)
             .replace('%% INTRO_FRAME %%', make_intro(participants))
             .replace('%% RAFFLE_FRAMES %%', raffle_frames)
@@ -74,30 +87,32 @@ def make_tex(template, participants):
             )
 
 
-# Wrap `contents` in \begin{frame} ... \end{frame},
-# optionally setting `title`
 def make_frame(contents, title=''):
-    if title == '':
-      return '\n'.join([
-          r'\begin{frame}',
-          f'{contents}',
-          r'\end{frame}'
-      ])
-    else:
-      return '\n'.join([
-          r'\begin{frame}',
-          f'\\frametitle{{{title}}}',
-          f'{contents}',
-          r'\end{frame}'
-      ])
+    """
+    Wrap `contents` in \begin{frame} ... \end{frame},
+    optionally setting `title`
+    """
+    lines = [r'\begin{frame}']
+    if title != '':
+        lines.append(f'\\frametitle{{{title}}}')
+    lines += [
+        f'{contents}',
+        r'\end{frame}'
+    ]
+    return '\n'.join(lines)
 
-# Turn the items into a multicolumn itmeize list
-# `items` is a list of (string, bool) tuples where
-# the string is the participant name and
-# the bool indicates whether the participant has been eliminated
+
 def make_list(items):
+    """
+    Turn the items into a multicolumn itmeize list
+    `items` is a list of (string, bool) tuples where
+    the string is the participant name and
+    the bool indicates whether the participant has been eliminated
+    """
     def color(name, eliminated):
-        return f'\\textcolor{{elim}}{{{name}}}' if eliminated else f'\\textbf{{{name}}}'
+        return (f'\\textcolor{{elim}}{{{name}}}'
+                if eliminated
+                else f'\\textbf{{{name}}}')
 
     items = '\n'.join([f'\\item {color(name, eliminated)}'
                        for name, eliminated in items])
@@ -106,15 +121,19 @@ def make_list(items):
                       r'\end{AutoMultiColItemize}'])
 
 
-# Generate the slide that lists all participants before raffling
 def make_intro(participants):
+    """
+    Generate the slide that lists all participants before raffling
+    """
     items = [(p, False) for p in participants]
     return make_frame(make_list(items), INTRO_TITLE)
 
 
-# Generate the raffling slides where one participant is eliminiated
-# per slide
 def make_raffle(participants):
+    """
+    Generate the raffling slides where one participant is eliminiated
+    per slide
+    """
     elimination_order = [name for name in participants]
     random.shuffle(elimination_order)
     eliminated = set()
@@ -127,8 +146,10 @@ def make_raffle(participants):
     return ('\n\n'.join(frames), elimination_order[-1])
 
 
-# Generate the last slide that contains the winner
 def make_congrats(winner):
+    """
+    Generate the last slide that contains the winner
+    """
     contents = '\n'.join([
         r'\begin{center}',
         f'{{\\huge \\textbf{{{winner}}}}}',
@@ -137,11 +158,13 @@ def make_congrats(winner):
     return make_frame(contents, CONGRATS_TITLE)
 
 
-# Save `contents` to `TEX_FILE`
 def write_tex(contents):
+    """
+    Save `contents` to `TEX_FILE`
+    """
     with open(TEX_FILE, 'w') as f:
         f.write(contents)
-    
+
 
 # `main` is the entry point
 if __name__ == '__main__':
