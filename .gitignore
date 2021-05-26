@@ -1,6 +1,12 @@
 ## Participant file
 osallistujat.txt
 
+## Generated automatically from rigged.template.tex
+rigged.tex
+
+## Don't commit output
+rigged.pdf
+
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof
