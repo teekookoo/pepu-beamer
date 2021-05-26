@@ -152,7 +152,7 @@ def make_congrats(winner):
     """
     contents = '\n'.join([
         r'\begin{center}',
-        f'{{\\huge \\textbf{{{winner}}}}}',
+        f'{{\\Huge \\textbf{{{winner}}}}}',
         r'\end{center}'
     ])
     return make_frame(contents, CONGRATS_TITLE)
