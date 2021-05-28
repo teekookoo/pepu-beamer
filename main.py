@@ -140,7 +140,7 @@ def make_raffle(participants):
     frames = []
     for eliminate in elimination_order[:-1]:
         eliminated.add(eliminate)
-        items = [(name, True in eliminated) for name in participants]
+        items = [(name, name in eliminated) for name in participants]
         title = f'{RAFFLE_PREFIX}{eliminate}{RAFFLE_SUFFIX}'
         frames.append(make_frame(make_list(items), title))
     return ('\n\n'.join(frames), elimination_order[-1])
